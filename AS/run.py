@@ -4,16 +4,29 @@ import sys
 
 
 def main():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(("", 53533))
-    sock.listen(5)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind(("127.0.0.1", 53533))
     while True:
-        clientConnected, clientAddress = sock.accept()
-        print ('Got connection from', clientAddress)
-        dataFromClient = clientConnected.recv(1024)
-        print(dataFromClient.decode())
+        try:
+            client_data, client_address = server_socket.recvfrom(1024)
+            print ('Got connection from', client_address, client_data)
+            client_data = client_data.decode()
+            print("client_data: ", client_data, type(client_data))
+        except socket.error as e:
+            print(e)
+            response = {
+                "message": "Bad Request",
+                "status_code": 400
+            }
+            return 400
+        with open("dns.json", "w+") as dns_file:
+            dns_file.write(client_data)
+        server_socket.close()
         break
 
-# app.run(host='0.0.0.0',
-#         port=53533,
-#         debug=True)
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Shutting Down DNS Server')
+        sys.exit(0)
