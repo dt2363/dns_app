@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, Response
 import json
 app = Flask(__name__)
 
@@ -10,15 +10,20 @@ def user():
     as_ip = request.args.get('as_ip', None)
     as_port = request.args.get('as_port', None)
     if hostname == None or fs_port == None or number == None or as_ip == None or as_port == None:
-        return json.dumps({"status": False, "message": "Parameter Missing"}), 400
-    return json.dumps(
-        {
-            "hostname": {hostname},
-            "fs_port": {fs_port},
-            "number": {number},
-            "as_ip": {as_ip},
-            "as_port": {as_port},
-            "message": "Parameter Missing"}), 200
+        response = {
+            "message": "Bad Request",
+            "status_code": 400
+        }
+        return Response(response=json.dumps(response), status=400, mimetype='application/json')
+    response = {
+        "status_code": 200,
+        "hostname": hostname,
+        "fs_port": fs_port,
+        "as_ip": as_ip,
+        "as_port": as_port,
+        "number": number
+        }
+    return Response(response=json.dumps(response), status=200, mimetype='application/json')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',
